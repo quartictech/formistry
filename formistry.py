@@ -33,6 +33,14 @@ async def store_to_datastore(form, data):
     entity["Form"] = form
     return loop.run_in_executor(None, client.put, entity)
 
+def write_file(f, data):
+    json.dump(data, f)
+    f.write("\n")
+
+async def store_to_file(form, data):
+    entity = {"form": form, "data": data}
+    return loop.run_in_executor(None, lambda: write_file(open("/var/formistry/submissions.json", "a+"), entity))
+
 def redirect(referrer, next_url):
     url = urllib.parse.urlparse(referrer)
     redirect_url = urllib.parse.urljoin("{0}://{1}".format(url[0], url[1]), next_url)
@@ -49,7 +57,7 @@ async def handle(request):
         if peername is not None:
             real_data["ip"] = peername[0]
         logging.info("[%s] form submitted with data: %s", form, real_data)
-        await store_to_datastore(form, real_data)
+        await store_to_file(form, real_data)
         await send_to_slack(form, real_data)
         return redirect(referrer, data["_next"])
     else:
