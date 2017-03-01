@@ -6,6 +6,7 @@ import urllib
 import textwrap
 import asyncio
 import logging
+import datetime
 
 logging.basicConfig(level=logging.INFO, format='%(levelname)s [%(asctime)s] %(name)s: %(message)s')
 slack_hook = "https://hooks.slack.com/services/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"
@@ -42,7 +43,7 @@ def write_file(f, data):
     f.write("\n")
 
 async def store_to_file(form, data, headers):
-    entity = {"form": form, "data": data, "headers": headers}
+    entity = {"date": datetime.datetime.now().isoformat(), "form": form, "data": data, "headers": headers}
     return loop.run_in_executor(None, lambda: write_file(open("/var/formistry/submissions.json", "a+"), entity))
 
 def redirect(referrer, next_url):
