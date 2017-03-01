@@ -84,7 +84,7 @@ async def handle(request):
         logging.info("[%s] form submitted with data: %s", form, real_data)
         headers = dict(request.headers)
         await store_to_file(form, real_data, headers)
-        await send_to_slack(form, real_data, headers)
+        await send_form_to_slack(form, real_data, headers)
         return redirect(referrer, data["_next"])
     else:
         logging.error("[%s] form missing _gotcha: %s", form, data)
