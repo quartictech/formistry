@@ -12,20 +12,40 @@ logging.basicConfig(level=logging.INFO, format='%(levelname)s [%(asctime)s] %(na
 slack_hook = "https://hooks.slack.com/services/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"
 loop = asyncio.get_event_loop()
 
-async def send_to_slack(form, data, headers):
-  formatted_data = "\n".join(["*{0}*: {1}".format(k, v) for k, v in data.items()])
-  formatted_headers = "\n".join(["*{0}*: {1}".format(k, v) for k, v in headers.items()])
-  payload = {
-    "text": textwrap.dedent(
-     """
-     *New form submission: {0}*
+async def send_form_to_slack(form, data, headers):
+  await send_to_slack({
+    "text": "*Formistry submission*",
+    "attachments": [
+        {
+            "pretext": "Form: *{0}*".format(form),
+            "fallback": "Form fields",
+            "title": "Form fields",
+            "color": "good",
+            "fields": [
+                { "title": field, "value": value} for field, value in data.items()
+            ]
+        },
+        {
+            "fallback": "Headers for submission",
+            "pretext": "Request headers",
+            "fields": [
+                { "title": field, "value": value} for field, value in headers.items()
+            ]
+        }
+    ]
+  })
 
-     {1}
+async def send_error_to_slack(error):
+    await send_to_slack({
+        "attachments": [{
+            "fallback": error,
+            "title": error,
+            "color": "danger"
+        }]
+    })
 
-     *Headers:*
-     {2}
-     """).format(form, formatted_data, formatted_headers)
-  }
+
+async def send_to_slack(payload):
   async with ClientSession() as session:
     async with session.post(slack_hook, data=json.dumps(payload)) as resp:
         if resp.status < 200 or resp.status >= 300:
@@ -68,6 +88,7 @@ async def handle(request):
         return redirect(referrer, data["_next"])
     else:
         logging.error("[%s] form missing _gotcha: %s", form, data)
+        await send_error_to_slack("form missing _gotcha: {0}".format(form))
         return None
 
 app = web.Application()
