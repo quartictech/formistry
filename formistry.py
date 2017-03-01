@@ -67,7 +67,8 @@ async def handle(request):
         await send_to_slack(form, real_data, headers)
         return redirect(referrer, data["_next"])
     else:
-        logging.error("[%s] form missing _gotcha: %s", data)
+        logging.error("[%s] form missing _gotcha: %s", form, data)
+        return None
 
 app = web.Application()
 app.router.add_post('/post/{form}', handle)
