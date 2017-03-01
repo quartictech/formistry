@@ -11,15 +11,19 @@ logging.basicConfig(level=logging.INFO, format='%(levelname)s [%(asctime)s] %(na
 slack_hook = "https://hooks.slack.com/services/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"
 loop = asyncio.get_event_loop()
 
-async def send_to_slack(form, data):
+async def send_to_slack(form, data, headers):
   formatted_data = "\n".join(["*{0}*: {1}".format(k, v) for k, v in data.items()])
+  formatted_headers = "\n".join(["*{0}*: {1}".format(k, v) for k, v in headers.items()])
   payload = {
     "text": textwrap.dedent(
      """
      *New form submission: {0}*
 
      {1}
-     """).format(form, formatted_data)
+
+     *Headers:*
+     {2}
+     """).format(form, formatted_data, formatted_headers)
   }
   async with ClientSession() as session:
     async with session.post(slack_hook, data=json.dumps(payload)) as resp:
@@ -37,8 +41,8 @@ def write_file(f, data):
     json.dump(data, f)
     f.write("\n")
 
-async def store_to_file(form, data):
-    entity = {"form": form, "data": data}
+async def store_to_file(form, data, headers):
+    entity = {"form": form, "data": data, "headers": headers}
     return loop.run_in_executor(None, lambda: write_file(open("/var/formistry/submissions.json", "a+"), entity))
 
 def redirect(referrer, next_url):
@@ -57,8 +61,8 @@ async def handle(request):
         if peername is not None:
             real_data["ip"] = peername[0]
         logging.info("[%s] form submitted with data: %s", form, real_data)
-        await store_to_file(form, real_data)
-        await send_to_slack(form, real_data)
+        await store_to_file(form, real_data, request.headers)
+        await send_to_slack(form, real_data, request.headers)
         return redirect(referrer, data["_next"])
     else:
         logging.error("[%s] form missing _gotcha: %s", data)
