@@ -10,12 +10,12 @@ jobs:
     steps:
       - checkout
 
+      - setup_remote_docker:
+          reusable: true
+
       - run:
           name: Build
           command: docker build -t ${QUARTIC_DOCKER_REPOSITORY}/formistry:${CIRCLE_BUILD_NUM} .
-
-      - setup_remote_docker:
-          reusable: true
 
       - deploy:
           command: |
