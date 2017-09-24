@@ -20,4 +20,4 @@ jobs:
       - deploy:
           command: |
             gcloud-auth --with-docker
-            docker push ${QUARTIC_DOCKER_REPOSITORY}/formistry:${VERSION}
+            docker push ${QUARTIC_DOCKER_REPOSITORY}/formistry:${CIRCLE_BUILD_NUM}
