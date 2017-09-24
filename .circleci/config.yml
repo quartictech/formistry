@@ -25,5 +25,5 @@ jobs:
             rm ${HOME}/gcloud-service-key.json
             docker login -u oauth2accesstoken -p "$(gcloud auth print-access-token)" https://eu.gcr.io
 
-            docker tag formistry eu.gcr.io/quartic-global-c39fc822/formistry:${CIRCLE_BUILD_NUM}
-            docker push eu.gcr.io/quartic-global-c39fc822/formistry:${CIRCLE_BUILD_NUM}
+            docker tag formistry ${GCLOUD_DOCKER_REPOSITORY}/formistry:${CIRCLE_BUILD_NUM}
+            docker push ${GCLOUD_DOCKER_REPOSITORY}/formistry:${CIRCLE_BUILD_NUM}
