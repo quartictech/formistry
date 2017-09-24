@@ -15,9 +15,15 @@ jobs:
 
       - run:
           name: Build
-          command: docker build -t ${QUARTIC_DOCKER_REPOSITORY}/formistry:${CIRCLE_BUILD_NUM} .
+          command: docker build -t formistry .
 
       - deploy:
           command: |
-            gcloud-auth --with-docker
-            docker push ${QUARTIC_DOCKER_REPOSITORY}/formistry:${CIRCLE_BUILD_NUM}
+            # TODO - move all this to helper
+            echo ${GCLOUD_SERVICE_KEY_BASE64} | base64 -d > ${HOME}/gcloud-service-key.json
+            gcloud auth activate-service-account --key-file ${HOME}/gcloud-service-key.json
+            rm ${HOME}/gcloud-service-key.json
+            docker login -u oauth2accesstoken -p "$(gcloud auth print-access-token)" https://eu.gcr.io
+
+            docker tag formistry quartic-global/formistry:${CIRCLE_BUILD_NUM}
+            docker push quartic-global/formistry:${CIRCLE_BUILD_NUM}
