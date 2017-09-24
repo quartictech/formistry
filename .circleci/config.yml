@@ -22,9 +22,8 @@ jobs:
             # TODO - move all this to helper
             echo ${GCLOUD_SERVICE_KEY_BASE64} | base64 -d > ${HOME}/gcloud-service-key.json
             gcloud auth activate-service-account --key-file ${HOME}/gcloud-service-key.json
-            gcloud config set project quartic-global-c39fc822
             rm ${HOME}/gcloud-service-key.json
             docker login -u oauth2accesstoken -p "$(gcloud auth print-access-token)" https://eu.gcr.io
 
-            docker tag formistry eu.gcr.io/quartic-global/formistry:${CIRCLE_BUILD_NUM}
-            docker push eu.gcr.io/quartic-global/formistry:${CIRCLE_BUILD_NUM}
+            docker tag formistry eu.gcr.io/quartic-global-c39fc822/formistry:${CIRCLE_BUILD_NUM}
+            docker push eu.gcr.io/quartic-global-c39fc822/formistry:${CIRCLE_BUILD_NUM}
