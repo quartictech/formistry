@@ -1,0 +1,23 @@
+version: 2
+
+jobs:
+  build:
+    docker:
+      - image: quartic/uber-builder:112
+
+    working_directory: ~/formistry
+
+    steps:
+      - checkout
+
+      - run:
+          name: Build
+          command: docker build -t ${QUARTIC_DOCKER_REPOSITORY}/formistry:${CIRCLE_BUILD_NUM} .
+
+      - setup_remote_docker:
+          reusable: true
+
+      - deploy:
+          command: |
+            gcloud-auth --with-docker
+            docker push ${QUARTIC_DOCKER_REPOSITORY}/formistry:${VERSION}
