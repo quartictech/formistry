@@ -1,0 +1,24 @@
+version: 2
+
+jobs:
+  build:
+    docker:
+      - image: quartic/uber-builder:116
+
+    working_directory: ~/formistry
+
+    steps:
+      - checkout
+
+      - setup_remote_docker:
+          reusable: true
+
+      - run:
+          name: Build
+          command: docker build -t formistry .
+
+      - deploy:
+          command: |
+            google-cloud-auth --with-docker
+            docker tag formistry ${GCLOUD_DOCKER_REPOSITORY}/formistry:${CIRCLE_BUILD_NUM}
+            docker push ${GCLOUD_DOCKER_REPOSITORY}/formistry:${CIRCLE_BUILD_NUM}
