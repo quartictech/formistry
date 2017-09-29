@@ -1,9 +1,7 @@
 from aiohttp import web, ClientSession
 from aiohttp.web import HTTPFound
-from google.cloud import datastore
 import json
 import urllib
-import textwrap
 import asyncio
 import logging
 import datetime
@@ -51,21 +49,6 @@ async def send_to_slack(payload):
         if resp.status < 200 or resp.status >= 300:
             logging.error("[%s] failure sending to slack: %s", form, resp.status)
 
-async def store_to_datastore(form, data):
-    client = datastore.Client(namespace="website_forms")
-    entity = datastore.Entity(key=client.key('FormSubmission'))
-    entity.update(data)
-    entity["Form"] = form
-    return loop.run_in_executor(None, client.put, entity)
-
-def write_file(f, data):
-    json.dump(data, f)
-    f.write("\n")
-
-async def store_to_file(form, data, headers):
-    entity = {"date": datetime.datetime.now().isoformat(), "form": form, "data": data, "headers": headers}
-    return loop.run_in_executor(None, lambda: write_file(open("/var/formistry/submissions.json", "a+"), entity))
-
 def redirect(referrer, next_url):
     url = urllib.parse.urlparse(referrer)
     redirect_url = urllib.parse.urljoin("{0}://{1}".format(url[0], url[1]), next_url)
@@ -83,7 +66,6 @@ async def handle(request):
             real_data["ip"] = peername[0]
         logging.info("[%s] form submitted with data: %s", form, real_data)
         headers = dict(request.headers)
-        await store_to_file(form, real_data, headers)
         await send_form_to_slack(form, real_data, headers)
         return redirect(referrer, data["_next"])
     else:
