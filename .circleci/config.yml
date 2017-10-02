@@ -3,7 +3,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: quartic/uber-builder:116
+      - image: quartic/uber-builder:144
 
     working_directory: ~/formistry
 
@@ -17,8 +17,10 @@ jobs:
           name: Build
           command: docker build -t formistry .
 
-      - deploy:
-          command: |
-            google-cloud-auth --with-docker
-            docker tag formistry ${GCLOUD_DOCKER_REPOSITORY}/formistry:${CIRCLE_BUILD_NUM}
-            docker push ${GCLOUD_DOCKER_REPOSITORY}/formistry:${CIRCLE_BUILD_NUM}
+      - run:
+          name: GCloud auth
+          command: google-cloud-auth --with-docker
+
+      - run:
+          name: Publish Docker image
+          command: docker-tag-and-push formistry ${CIRCLE_BUILD_NUM}
