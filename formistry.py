@@ -6,8 +6,10 @@ import asyncio
 import logging
 import datetime
 
+# NOTE: Uncomment line below and add Slack hook API key
+# slack_hook = "https://hooks.slack.com/services/A/B/C"
+
 logging.basicConfig(level=logging.INFO, format='%(levelname)s [%(asctime)s] %(name)s: %(message)s')
-slack_hook = "https://hooks.slack.com/services/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"
 loop = asyncio.get_event_loop()
 
 async def send_form_to_slack(form, data, headers):
